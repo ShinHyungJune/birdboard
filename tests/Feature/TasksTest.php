@@ -61,9 +61,11 @@ class TasksTest extends TestCase
     {
         $this->signIn();
 
-        $task = factory(Task::class)->create();
+        $project = factory(Project::class)->create(['user_id' => auth()->id()]);
 
-        $this->patch('/tasks.'.$task->id, [
+        $task = factory(Task::class)->create(['project_id' => $project->id]);
+
+        $result = $this->patch('/tasks/'.$task->id, [
             'body' => 'changed',
             'completed' => true,
             'project_id' => $task->project_id
@@ -72,7 +74,22 @@ class TasksTest extends TestCase
         $this->assertDatabaseHas('tasks', [
             'body' => 'changed',
             'completed' => true,
-            'project_id'
         ]);
+    }
+
+    /** @test */
+    public function a_user_can_update_only_their_task()
+    {
+        $user = factory(User::class)->create();
+
+        $other = factory(User::class)->create();
+
+        $this->signIn($user);
+
+        $project = factory(Project::class)->create(['user_id' => $other->id]);
+
+        $task = factory(Task::class)->create(['project_id' => $project->id]);
+
+        $this->patch('/tasks/'.$task->id, ["body"=>"asd"])->assertStatus(403);
     }
 }

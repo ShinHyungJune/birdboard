@@ -15,8 +15,9 @@
                             @method('PATCH')
                             @csrf
                             {{$task->body}}
-                            <input class="task" style="color:blue; margin-bottom:0;" value="{{$task->body}}">
-                            <input type="checkbox" name="completed" style="float:right;" onChange="this.form.submit()">
+                            <input class="task" name="body" style="color:blue; margin-bottom:0;" value="{{$task->body}}">
+                            <input type="checkbox" name="completed" style="float:right;" {{$task->completed ? 'checked' : ''}} onChange="this.form.submit()">
+                            <button class="btn bg-accent">수정</button>
                         </form>
 
                     @empty

@@ -33,19 +33,19 @@ class TaskController extends Controller
 
     public function update(Task $task)
     {
-        dd($task->body);
         request()->validate([
             'body' => 'required|string',
-            'project_id' => 'required'
         ]);
 
-        $project = Project::findOrFail(\request()->project_id);
+        $project = Project::findOrFail($task->project->id);
 
         if($project->user_id != auth()->id())
             return abort(403);
 
-
-        $task->update(request()->all());
+        $task->update([
+            "body" => \request()->body,
+            "completed" => \request()->completed == "on" ? true : false,
+        ]);
 
         return redirect()->back();
     }
