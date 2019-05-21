@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Task;
 use App\User;
 use App\Project;
+use Tests\Setup\ProjectFactory;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,18 +17,14 @@ class TasksTest extends TestCase
     /** @test */
     public function a_project_can_have_tasks()
     {
-        $this->withExceptionHandling();
-
         $this->signIn();
 
-        $project = factory(Project::class)->create(['user_id' => auth()->id()]);
+        $project = $this->projectFactory->ownedBy($this->signIn())->withTasks(1)->create();
 
-        $task = "빨래 널자";
-
-        $this->post('/tasks',['body' => $task, 'project_id' => $project->id]);
+        $this->post('/tasks',['body' => $project->tasks->first()->body, 'project_id' => $project->id]);
 
         $this->get($project->path())
-            ->assertSee($task);
+            ->assertSee($project->tasks->first()->body);
     }
 
     /** @test */
@@ -56,19 +53,24 @@ class TasksTest extends TestCase
         $this->post('/tasks',$attributes)->assertStatus(403);
     }
 
+    protected $projectFactory;
+
+    public function __construct($name = null, array $data = [], $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+
+        $this->projectFactory = new ProjectFactory();
+    }
+
     /** @test */
     public function a_task_can_be_updated()
     {
-        $this->signIn();
+        $project = $this->projectFactory->ownedBy($this->signIn())->withTasks(1)->create();
 
-        $project = factory(Project::class)->create(['user_id' => auth()->id()]);
-
-        $task = factory(Task::class)->create(['project_id' => $project->id]);
-
-        $result = $this->patch('/tasks/'.$task->id, [
+        $result = $this->patch('/tasks/'.$project->tasks[0]->id, [
             'body' => 'changed',
             'completed' => true,
-            'project_id' => $task->project_id
+            'project_id' => $project->id
         ]);
 
         $this->assertDatabaseHas('tasks', [
@@ -86,10 +88,8 @@ class TasksTest extends TestCase
 
         $this->signIn($user);
 
-        $project = factory(Project::class)->create(['user_id' => $other->id]);
+        $project = $this->projectFactory->ownedBy($other)->withTasks(1)->create();
 
-        $task = factory(Task::class)->create(['project_id' => $project->id]);
-
-        $this->patch('/tasks/'.$task->id, ["body"=>"asd"])->assertStatus(403);
+        $this->patch('/tasks/'.$project->tasks->first()->id, ["body"=>"asd"])->assertStatus(403);
     }
 }

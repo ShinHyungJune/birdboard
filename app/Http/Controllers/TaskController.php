@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Task;
 use Illuminate\Http\Request;
 use App\Project;
+
 class TaskController extends Controller
 {
     public function create()
@@ -23,8 +24,7 @@ class TaskController extends Controller
 
         $project = Project::findOrFail(\request()->project_id);
 
-        if($project->user_id != auth()->id())
-            return abort(403);
+        $this->authorize('update', $project);
 
         Task::create(\request()->all());
 
@@ -37,10 +37,7 @@ class TaskController extends Controller
             'body' => 'required|string',
         ]);
 
-        $project = Project::findOrFail($task->project->id);
-
-        if($project->user_id != auth()->id())
-            return abort(403);
+        $this->authorize('update', $task);
 
         $task->update([
             "body" => \request()->body,

@@ -1,9 +1,6 @@
 @extends('layouts.app')
 @section('content')
-    <body>
-    <form action="">
-        <input type="text" name="title">
-        <input type="text" name="body">
+    <form action="/projects" method="post">
+        @include('projects.form', ['project' => new App\Project()])
     </form>
-    </body>
 @endsection

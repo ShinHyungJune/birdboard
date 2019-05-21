@@ -91,4 +91,18 @@ class ProjectsTest extends TestCase
         // body 입력 안했을 때 validation error 기대
         $this->post('/projects', $attributes)->assertSessionHasErrors('body');
     }
+
+    /** @test */
+    public function a_user_can_update_a_project()
+    {
+        $project = factory(Project::class)->create();
+
+        $this->actingAs($project->user);
+
+        $this->get($project->path() . '/edit')->assertStatus(200);
+
+        $this->patch($project->path(), $attributes = ['title' => 'changed', 'body' => 'changed']);
+
+        $this->assertDatabaseHas('projects', $attributes);
+    }
 }

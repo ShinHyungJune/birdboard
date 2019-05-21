@@ -14,6 +14,29 @@ class ProjectController extends Controller
         return view('projects.index', compact('projects'));
     }
 
+    public function show(Project $project)
+    {
+        $this->authorize('view', $project);
+
+        return view('projects.show', compact('project'));
+    }
+
+    public function edit(Project $project)
+    {
+        $this->authorize('update', $project);
+
+        return view('projects.edit', compact('project'));
+    }
+
+    public function update(Project $project)
+    {
+        $this->authorize('update', $project);
+
+        $project->update($this->validateRequest());
+
+        return redirect($project->path());
+    }
+
     public function create()
     {
         return view('projects.create');
@@ -21,25 +44,20 @@ class ProjectController extends Controller
 
     public function store()
     {
+        auth()->user()->projects()->create($this->validateRequest());
 
+        return redirect('/projects');
+    }
+
+    protected function validateRequest()
+    {
         // 이제 Request $request 없이 바로 request()로 접근 가능
         $attributes = request()->validate([
             'title' => 'required',
             'body' => 'required',
         ]);
 
-        auth()->user()->projects()->create($attributes);
-
-        return redirect('/projects');
+        return $attributes;
     }
 
-    public function show(Project $project)
-    {
-
-        if(auth()->user()->isNot($project->user)){
-            abort(403);
-        }
-
-        return view('projects.show', compact('project'));
-    }
 }
