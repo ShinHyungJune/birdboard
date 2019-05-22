@@ -2,10 +2,13 @@
 
 namespace App;
 
+use App\Traits\RecordActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
+    use RecordActivity;
+
     protected $fillable = ["title", "body", "user_id"];
 
     public function path()
@@ -21,5 +24,10 @@ class Project extends Model
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
     }
 }
