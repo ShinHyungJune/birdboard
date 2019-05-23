@@ -49,6 +49,15 @@ class ProjectController extends Controller
         return redirect('/projects');
     }
 
+    public function destroy(Project $project)
+    {
+        $this->authorize('delete', $project);
+
+        $project->delete();
+
+        return redirect('/projects');
+    }
+
     protected function validateRequest()
     {
         // 이제 Request $request 없이 바로 request()로 접근 가능

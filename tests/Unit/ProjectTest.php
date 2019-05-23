@@ -27,4 +27,5 @@ class ProjectTest extends TestCase
 
         $this->assertInstanceOf(User::class, $project->user);
     }
+
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Project;
 use App\User;
+use Tests\Setup\ProjectFactory;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,8 +13,16 @@ class ProjectsTest extends TestCase
 {
     use WithFaker, RefreshDatabase;
 
+    protected $projectFactory;
+
+    public function __construct($name = null, array $data = [], $dataName = '')
+    {
+        parent::__construct($name, $data, $dataName);
+        $this->projectFactory = new ProjectFactory();
+    }
+
     /** @test */
-    public function a_user_can_create_a_project()
+    function a_user_can_create_a_project()
     {
         // 직접 만든 커스텀 함수임. TestCase.php에다 만들면됨.
         $this->signIn();
@@ -35,7 +44,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function a_user_can_view_their_project()
+    function a_user_can_view_their_project()
     {
         $this->signIn();
 
@@ -47,7 +56,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function an_authenticated_user_cannot_view_the_projects_of_others()
+    function an_authenticated_user_cannot_view_the_projects_of_others()
     {
         $this->signIn();
 
@@ -57,7 +66,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function guests_cannot_control_project()
+    function guests_cannot_control_project()
     {
         $project = factory(Project::class)->create();
 
@@ -72,7 +81,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function a_project_requires_a_title()
+    function a_project_requires_a_title()
     {
         $this->signIn();
 
@@ -83,7 +92,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function a_project_requires_a_body()
+    function a_project_requires_a_body()
     {
         $this->signIn();
 
@@ -93,7 +102,7 @@ class ProjectsTest extends TestCase
     }
 
     /** @test */
-    public function a_user_can_update_a_project()
+    function a_user_can_update_a_project()
     {
         $project = factory(Project::class)->create();
 
@@ -105,4 +114,32 @@ class ProjectsTest extends TestCase
 
         $this->assertDatabaseHas('projects', $attributes);
     }
+
+    /** @test */
+    function unauthorized_users_cannot_delete_projects()
+    {
+        $project = $this->projectFactory->create();
+
+        $this->delete($project->path())
+            ->assertRedirect('/login');
+
+        $this->signIn();
+
+        $this->delete($project->path())->assertStatus(403);
+    }
+
+    /** @test */
+    function a_user_can_delete_a_project()
+    {
+        $this->withoutExceptionHandling();
+
+        $project = $this->projectFactory->create();
+
+        $this->actingAs($project->user)
+            ->delete($project->path())
+            ->assertRedirect('/projects');
+
+        $this->assertDatabaseMissing('projects', $project->only('id'));
+    }
+
 }

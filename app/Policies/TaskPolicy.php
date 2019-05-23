@@ -43,7 +43,7 @@ class TaskPolicy
      */
     public function update(User $user, Task $task)
     {
-        return $user->is($task->project->user);
+        return $user->is($task->project->user) || $task->project->members->contains($user);
     }
 
     /**

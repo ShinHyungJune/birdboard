@@ -9,7 +9,6 @@ trait RecordActivity
         $this->activities()->create([
             "description" => $description,
             "project_id" => class_basename($this) === 'Project' ? $this->id : $this->project->id,
-            'user_id' => auth()->id()
         ]);
     }
 }

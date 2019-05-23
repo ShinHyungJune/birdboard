@@ -21,7 +21,7 @@ Route::resource('projects', 'ProjectController');
 Route::group(['middleware' => 'auth'], function(){
     Route::get('/home', 'HomeController@index')->name('home');
 
-    Route::resource('projects', 'ProjectController')->only(['index', 'store', 'show', 'create']);
+    Route::resource('projects', 'ProjectController')->only(['index', 'store', 'show', 'create', 'destroy']);
 
     Route::resource('tasks', 'TaskController');
 });
